@@ -2,3 +2,4 @@
 # Blank lines and text after # are ignored. Use exact local or remote refs.
 feature/episode-library-sorting
 dev/home-libraries
+dev/home-favorites-shortcut
