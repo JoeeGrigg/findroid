@@ -9,6 +9,7 @@ import dev.jdtech.jellyfin.models.CollectionType
 import dev.jdtech.jellyfin.models.HomeItem
 import dev.jdtech.jellyfin.models.HomeSection
 import dev.jdtech.jellyfin.models.UiText
+import dev.jdtech.jellyfin.models.toFindroidCollection
 import dev.jdtech.jellyfin.repository.JellyfinRepository
 import dev.jdtech.jellyfin.settings.domain.AppPreferences
 import dev.jdtech.jellyfin.utils.toView
@@ -72,7 +73,9 @@ constructor(
         Timber.i("Loading libraries")
         val libraries =
             if (appPreferences.getValue(appPreferences.homeLibraries)) {
-                repository.getLibraries()
+                repository
+                    .getUserViews()
+                    .mapNotNull { view -> view.toFindroidCollection(repository) }
             } else {
                 emptyList()
             }
