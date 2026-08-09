@@ -10,12 +10,31 @@ run:
     adb shell am force-stop dev.jdtech.jellyfin.debug
     adb shell am start -W -n dev.jdtech.jellyfin.debug/dev.jdtech.jellyfin.MainActivity
 
-# Merge configured branches with personal, then build, install, and launch the result.
+# Merge configured branches with personal, run the result, then remove the temporary branch.
 integrate-run:
     #!/usr/bin/env bash
     set -euo pipefail
     branches_file="{{ integration_branches_file }}"
+    temporary_branch=""
     test -z "$(git status --porcelain)" || { echo "Working tree is not clean." >&2; exit 1; }
+
+    cleanup() {
+        status=$?
+        trap - EXIT
+        if git rev-parse --verify --quiet MERGE_HEAD >/dev/null; then
+            git merge --abort || true
+        fi
+        if ! git switch personal; then
+            echo "Failed to return to personal; temporary integration branch was not removed." >&2
+            exit 1
+        fi
+        if test -n "$temporary_branch"; then
+            git branch -D "$temporary_branch"
+        fi
+        exit "$status"
+    }
+    trap cleanup EXIT
+
     adb get-state 2>/dev/null | grep -qx device || {
         echo "No debugging device connected. Check 'adb devices'." >&2
         exit 1
@@ -36,11 +55,11 @@ integrate-run:
     done
     integration_branch="integration/$(date -u +%Y%m%d-%H%M%S)"
     git switch -c "$integration_branch"
+    temporary_branch="$integration_branch"
     for ref in "${branches[@]}"; do
         echo "Merging $ref into $integration_branch"
         git merge --no-ff --no-edit "$ref"
     done
-    echo "Built integration branch $integration_branch"
     just run
 
 # Update main from upstream, then rebase and push the personal branch.

@@ -111,9 +111,9 @@ To combine all configured branches with `personal`, build the result, install it
 just integrate-run
 ```
 
-This recipe requires a clean working tree and a connected ADB device. It fetches all remotes, creates a timestamped `integration/<timestamp>` branch from `personal`, merges every configured ref in order, and runs the normal device workflow. It leaves the integration branch checked out for debugging. Integration branches are temporary and must never be used for upstream pull requests.
+This recipe requires a clean working tree and a connected ADB device. It fetches all remotes, creates a timestamped `integration/<timestamp>` branch from `personal`, merges every configured ref in order, and runs the normal device workflow. Afterward, it switches back to `personal` and deletes the temporary integration branch, including when the build or a merge fails.
 
-If a merge conflicts, resolve or abort it on the generated integration branch. Do not resolve integration conflicts by changing the clean `feature/*` branches unless the underlying feature itself needs correction.
+If a merge conflicts, the recipe aborts it before cleaning up. Fix the conflict in the underlying development branch; do not change clean `feature/*` branches unless the underlying feature itself needs correction.
 
 ## Build and device workflow
 
