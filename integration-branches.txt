@@ -1,0 +1,3 @@
+# Git refs to merge into a temporary integration branch, one per line.
+# Blank lines and text after # are ignored. Use exact local or remote refs.
+feature/episode-library-sorting

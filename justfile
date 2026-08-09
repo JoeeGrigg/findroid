@@ -1,6 +1,7 @@
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
 upstream_url := "https://github.com/jarnedemeulemeester/findroid.git"
+integration_branches_file := "integration-branches.txt"
 
 # Build, install, and launch Findroid on the connected debugging device.
 run:
@@ -8,6 +9,39 @@ run:
     ./gradlew :app:phone:installLibreDebug
     adb shell am force-stop dev.jdtech.jellyfin.debug
     adb shell am start -W -n dev.jdtech.jellyfin.debug/dev.jdtech.jellyfin.MainActivity
+
+# Merge configured branches with personal, then build, install, and launch the result.
+integrate-run:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    branches_file="{{ integration_branches_file }}"
+    test -z "$(git status --porcelain)" || { echo "Working tree is not clean." >&2; exit 1; }
+    adb get-state 2>/dev/null | grep -qx device || {
+        echo "No debugging device connected. Check 'adb devices'." >&2
+        exit 1
+    }
+    git fetch --all --prune
+    git switch personal
+    test -f "$branches_file" || { echo "$branches_file does not exist." >&2; exit 1; }
+    mapfile -t branches < <(
+        sed -e 's/#.*//' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$branches_file" |
+            grep -v '^$'
+    )
+    test "${#branches[@]}" -gt 0 || { echo "$branches_file contains no branches." >&2; exit 1; }
+    for ref in "${branches[@]}"; do
+        git rev-parse --verify --quiet "${ref}^{commit}" >/dev/null || {
+            echo "Git ref '$ref' does not exist." >&2
+            exit 1
+        }
+    done
+    integration_branch="integration/$(date -u +%Y%m%d-%H%M%S)"
+    git switch -c "$integration_branch"
+    for ref in "${branches[@]}"; do
+        echo "Merging $ref into $integration_branch"
+        git merge --no-ff --no-edit "$ref"
+    done
+    echo "Built integration branch $integration_branch"
+    just run
 
 # Update main from upstream, then rebase and push the personal branch.
 sync-personal:

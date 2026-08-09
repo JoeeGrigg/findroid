@@ -78,6 +78,20 @@ just push-pr <name>
 
 This pushes `feature/<name>` to `origin` using `--force-with-lease`, ready for a pull request to the original repository. Only `feature/*` branches should be used for upstream pull requests.
 
+## Integration testing multiple branches
+
+`integration-branches.txt` defines the Git refs to combine for local integration testing. It accepts one exact local or remote ref per line. Blank lines and text following `#` are ignored.
+
+To combine all configured branches with `personal`, build the result, install it, and launch it on the connected device:
+
+```bash
+just integrate-run
+```
+
+This recipe requires a clean working tree and a connected ADB device. It fetches all remotes, creates a timestamped `integration/<timestamp>` branch from `personal`, merges every configured ref in order, and runs the normal device workflow. It leaves the integration branch checked out for debugging. Integration branches are temporary and must never be used for upstream pull requests.
+
+If a merge conflicts, resolve or abort it on the generated integration branch. Do not resolve integration conflicts by changing the clean `feature/*` branches unless the underlying feature itself needs correction.
+
 ## Build and device workflow
 
 To build, install, and launch the phone app on the connected ADB debugging device:
