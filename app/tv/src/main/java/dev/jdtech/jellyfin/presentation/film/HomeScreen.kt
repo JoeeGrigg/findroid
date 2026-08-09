@@ -14,16 +14,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.MaterialTheme
+import dev.jdtech.jellyfin.core.presentation.dummy.dummyCollections
 import dev.jdtech.jellyfin.core.presentation.dummy.dummyHomeSection
 import dev.jdtech.jellyfin.core.presentation.dummy.dummyHomeSuggestions
 import dev.jdtech.jellyfin.core.presentation.dummy.dummyHomeView
 import dev.jdtech.jellyfin.film.presentation.home.HomeAction
 import dev.jdtech.jellyfin.film.presentation.home.HomeState
 import dev.jdtech.jellyfin.film.presentation.home.HomeViewModel
+import dev.jdtech.jellyfin.models.CollectionType
 import dev.jdtech.jellyfin.models.FindroidEpisode
 import dev.jdtech.jellyfin.models.FindroidMovie
 import dev.jdtech.jellyfin.models.FindroidShow
 import dev.jdtech.jellyfin.presentation.film.components.HomeCarousel
+import dev.jdtech.jellyfin.presentation.film.components.HomeLibraries
 import dev.jdtech.jellyfin.presentation.film.components.HomeSection
 import dev.jdtech.jellyfin.presentation.film.components.HomeView
 import dev.jdtech.jellyfin.presentation.theme.FindroidTheme
@@ -33,6 +36,7 @@ import org.jellyfin.sdk.model.api.BaseItemKind
 
 @Composable
 fun HomeScreen(
+    navigateToLibrary: (libraryId: UUID, libraryName: String, libraryType: CollectionType) -> Unit,
     navigateToMovie: (itemId: UUID) -> Unit,
     navigateToShow: (itemId: UUID) -> Unit,
     navigateToPlayer: (itemId: UUID, itemKind: BaseItemKind) -> Unit,
@@ -49,6 +53,9 @@ fun HomeScreen(
         state = state,
         onAction = { action ->
             when (action) {
+                is HomeAction.OnLibraryClick -> {
+                    navigateToLibrary(action.library.id, action.library.name, action.library.type)
+                }
                 is HomeAction.OnItemClick -> {
                     when (action.item) {
                         is FindroidMovie -> navigateToMovie(action.item.id)
@@ -78,6 +85,16 @@ private fun HomeScreenLayout(state: HomeState, onAction: (HomeAction) -> Unit) {
             ),
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacings.large),
     ) {
+        if (state.libraries.isNotEmpty()) {
+            item(key = "libraries") {
+                HomeLibraries(
+                    libraries = state.libraries,
+                    itemsPadding = itemsPadding,
+                    onAction = onAction,
+                    modifier = Modifier.animateItem(),
+                )
+            }
+        }
         state.suggestionsSection?.let { section ->
             item(key = section.id) {
                 HomeCarousel(
@@ -125,6 +142,7 @@ private fun HomeScreenLayoutPreview() {
         HomeScreenLayout(
             state =
                 HomeState(
+                    libraries = dummyCollections,
                     suggestionsSection = dummyHomeSuggestions,
                     resumeSection = dummyHomeSection,
                     views = listOf(dummyHomeView),

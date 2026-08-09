@@ -52,6 +52,7 @@
     <string name="title_download">Downloads</string>
     <string name="about">About</string>
     <string name="home">Home</string>
+    <string name="home_libraries">Display libraries</string>
     <string name="home_suggestions">Display suggestions</string>
     <string name="home_continue_watching">Display continue watching</string>
     <string name="home_next_up">Display next up</string>

@@ -188,6 +188,7 @@ private fun MainScreenLayout(
         when (activeTabIndex) {
             1 -> {
                 HomeScreen(
+                    navigateToLibrary = navigateToLibrary,
                     navigateToMovie = navigateToMovie,
                     navigateToShow = navigateToShow,
                     navigateToPlayer = navigateToPlayer,

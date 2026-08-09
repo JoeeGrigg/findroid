@@ -166,6 +166,10 @@ class SettingsViewModel @Inject constructor(private val appPreferences: AppPrefe
                                         preferences =
                                             listOf(
                                                 PreferenceSwitch(
+                                                    nameStringResource = R.string.home_libraries,
+                                                    backendPreference = appPreferences.homeLibraries,
+                                                ),
+                                                PreferenceSwitch(
                                                     nameStringResource = R.string.home_suggestions,
                                                     backendPreference =
                                                         appPreferences.homeSuggestions,
