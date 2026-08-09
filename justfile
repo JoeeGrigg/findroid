@@ -38,6 +38,7 @@ feature name:
     }
     git switch personal
     git switch -c "$dev_branch"
+    git config "branch.${dev_branch}.personalBase" "$(git rev-parse personal)"
     echo "Develop and commit on $dev_branch. Run 'just prepare-pr {{ name }}' when ready."
 
 # Regenerate a clean upstreamable feature branch while keeping the personal dev branch checked out.
@@ -51,7 +52,15 @@ prepare-pr name:
         echo "Branch $dev_branch does not exist." >&2
         exit 1
     }
-    personal_base="$(git merge-base "$dev_branch" personal)"
+    personal_base="$(git config --get "branch.${dev_branch}.personalBase" || true)"
+    test -n "$personal_base" || {
+        echo "The personal base for $dev_branch is not recorded. Recreate it with 'just feature {{ name }}'." >&2
+        exit 1
+    }
+    git merge-base --is-ancestor "$personal_base" "$dev_branch" || {
+        echo "The recorded personal base is not an ancestor of $dev_branch." >&2
+        exit 1
+    }
     git branch -f "$pr_branch" "$dev_branch"
     git rebase --onto main "$personal_base" "$pr_branch"
     git switch "$dev_branch"
