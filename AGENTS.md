@@ -9,6 +9,29 @@
 - Upstreamable work is developed on `dev/<name>` with personal tooling available, then exported to a clean `feature/<name>` branch.
 - Run branch-changing recipes only with a clean working tree.
 
+## Upstream-quality implementation requirements
+
+All code changes must follow the existing style, architecture, naming, and implementation patterns of this repository so they fit naturally with the surrounding code and have a high likelihood of being accepted upstream.
+
+Before implementing a change:
+
+1. Inspect analogous features and nearby code across the relevant modules.
+2. Reuse existing models, components, patterns, and abstractions where appropriate.
+3. Respect current module boundaries and keep presentation, domain, data, and platform-specific behavior in their established layers.
+4. Prefer the smallest focused change that fully solves the problem; avoid unrelated refactors or personal conventions.
+
+Before considering a change complete:
+
+- Match the repository's Kotlin and Compose conventions, resource naming, preference handling, and navigation patterns.
+- Keep phone and TV implementations consistent when shared behavior affects both, while respecting platform-specific differences.
+- Add user-facing text through Android resources and preserve the repository's localization workflow.
+- Avoid duplicating logic when the repository already has an appropriate shared location.
+- Preserve backward compatibility and existing behavior unless the task explicitly requires otherwise.
+- Review the final diff as an upstream maintainer would, ensuring it contains only relevant, production-ready changes.
+- Run formatting and all relevant builds or tests. Do not describe work as complete while known failures remain.
+
+Personal tooling and integration-only behavior belong on `personal` and must not leak into clean upstream `feature/*` branches.
+
 ## Personal development workflow
 
 The `justfile` is intentionally maintained on `personal` and inherited by `dev/*` branches. Use these recipes instead of manually manipulating branches when possible.
